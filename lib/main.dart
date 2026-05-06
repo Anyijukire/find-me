@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -132,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+"""
   Widget _buildLogTab() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -146,6 +148,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+  """
+
+  Widget _buildLogTab() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('detections') // The folder the Pi will write to
+          .orderBy('timestamp', descending: true)
+         .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+      
+        final docs = snapshot.data!.docs;
+        return ListView.builder(
+          itemCount: docs.length,
+          itemBuilder: (context, i) {
+            final data = docs[i].data() as Map<String, dynamic>;
+            return Card(
+              child: ListTile(
+                leading: Icon(Icons.warning, color: Colors.orange),
+                title: Text("Status: ${data['status']}"),
+                subtitle: Text("Confidence: ${(data['confidence'] * 100).toStringAsFixed(1)}%"),
+                trailing: Text(data['time'] ?? ""),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 
   Widget _buildThermalTab() {
     return Center(
