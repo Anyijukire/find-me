@@ -94,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _initializeFCM() async {
-    final messaging = FirebaseMessaging.instance;
+  //  final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission();
     final token = await messaging.getToken();
     setState(() => _token = token);
@@ -133,22 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-"""
-  Widget _buildLogTab() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: notifications.length,
-      itemBuilder: (_, i) => Card(
-        elevation: 2,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(notifications[i]),
-        ),
-      ),
-    );
-  }
-  """
+
 
   Widget _buildLogTab() {
     return StreamBuilder<QuerySnapshot>(
