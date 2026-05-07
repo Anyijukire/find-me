@@ -87,6 +87,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _token;
   List<String> notifications = [];
 
+  final FirebaseMessaging messaging = FirebaseMessaging.instance;
+  
   @override
   void initState() {
     super.initState();
