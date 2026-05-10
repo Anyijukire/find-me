@@ -166,24 +166,128 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
 
+  //Widget _buildThermalTab() {
+  //  return Center(
+  //    child: Column(
+  //      mainAxisAlignment: MainAxisAlignment.center,
+  //      children: [
+  //        const Icon(Icons.thermostat_auto, size: 80),
+  //        const SizedBox(height: 16),
+  //        const Text('Thermal image feed will appear here'),
+  //        const SizedBox(height: 12),
+  //        ElevatedButton.icon(
+  //          onPressed: () {},
+  //          icon: const Icon(Icons.refresh),
+  //          label: const Text('Refresh Feed'),
+  //        )
+  //      ],
+  //    ),
+  //  );
+  //}
+
   Widget _buildThermalTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return StreamBuilder<QuerySnapshot>(
+      // Pull the latest detection from Firestore
+      stream: FirebaseFirestore.instance
+          .collection('detections')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No thermal data available.'));
+        }
+
+        // Grab the list of 768 temperatures from the document
+        var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+        List<dynamic> thermalData = data['thermal_data'] ?? [];
+
+        if (thermalData.isEmpty) {
+          return const Center(child: Text('Waiting for next thermal scan...'));
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "LATEST THERMAL SNAPSHOT",
+                  style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                ),
+              ),
+              // The Heatmap Grid
+              AspectRatio(
+                aspectRatio: 32 / 24, // Matches the sensor's physical layout
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(), // Scroll the whole page instead
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 32, // 32 pixels wide
+                    ),
+                    itemCount: thermalData.length, // 768 pixels total
+                    itemBuilder: (context, index) {
+                      double temp = thermalData[index].toDouble();
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: _getHeatmapColor(temp),
+                          // Slight border creates a "technical" grid look
+                          border: Border.all(color: Colors.black.withOpacity(0.05), width: 0.1),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildLegend(), // Helpful for your presentation audience
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Color logic for your heatmap
+  Color _getHeatmapColor(double temp) {
+    if (temp > 34) return Colors.red;
+    if (temp > 30) return Colors.orange;
+    if (temp > 26) return Colors.yellow;
+    if (temp > 22) return Colors.green;
+    return Colors.blue.shade900;
+  }
+
+  // A simple UI legend to show what colors mean
+  Widget _buildLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _legendItem("Hot", Colors.red),
+        _legendItem("Warm", Colors.orange),
+        _legendItem("Ambient", Colors.green),
+        _legendItem("Cold", Colors.blue.shade900),
+      ],
+    );
+  }
+
+  Widget _legendItem(String label, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
         children: [
-          const Icon(Icons.thermostat_auto, size: 80),
-          const SizedBox(height: 16),
-          const Text('Thermal image feed will appear here'),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh Feed'),
-          )
+          Container(width: 12, height: 12, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: const TextStyle(fontSize: 10)),
         ],
       ),
     );
   }
+
 
   Widget _buildNotificationsTab() {
     return Padding(
