@@ -88,6 +88,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<String> notifications = [];
 
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
+  bool isScanning = false; // Add this line
   
   @override
   void initState() {
@@ -107,6 +108,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final alert = "$title\n$body";
       setState(() => notifications.insert(0, alert));
     });
+  }
+
+  void togglePi(bool value) async {
+  // We use .set with SetOptions(merge: true) so it doesn't delete other settings
+    await FirebaseFirestore.instance
+        .collection('commands')
+        .doc('pi_control') 
+        .set({'power': value ? 'on' : 'off'}, SetOptions(merge: true));
+      
+    setState(() => isScanning = value);
   }
 
   @override
@@ -138,30 +149,88 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
   Widget _buildLogTab() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('detections') // The folder the Pi will write to
-          .orderBy('timestamp', descending: true)
-         .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-      
-        final docs = snapshot.data!.docs;
-        return ListView.builder(
-          itemCount: docs.length,
-          itemBuilder: (context, i) {
-            final data = docs[i].data() as Map<String, dynamic>;
-            return Card(
-              child: ListTile(
-                leading: Icon(Icons.warning, color: Colors.orange),
-                title: Text("Status: ${data['status']}"),
-                subtitle: Text("Confidence: ${(data['confidence'] * 100).toStringAsFixed(1)}%"),
-                trailing: Text(data['time'] ?? ""),
+    return Column(
+      children: [
+        // 1. THE SYSTEM TOGGLE (Mission Control)
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isScanning ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: isScanning ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
               ),
-            );
-          },
-        );
-      },
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isScanning ? "SYSTEM ACTIVE" : "SYSTEM PAUSED",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isScanning ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    const Text("Remote Drone Scanner", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Switch.adaptive(
+                  value: isScanning,
+                  onChanged: (value) => togglePi(value),
+                  activeColor: Colors.green,
+                  trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.selected)) return Colors.green;
+                    return Colors.red;
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ),
+      
+        const Divider(), // Visual separator
+      
+        // 2. THE DATA LOG (Your existing StreamBuilder logic)
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('detections')
+                .orderBy('timestamp', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            
+              final docs = snapshot.data!.docs;
+            
+              return ListView.builder(
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  return ListTile(
+                    leading: Icon(
+                      Icons.warning, 
+                      color: data['status'] == "STABLE / ACTIVE" ? Colors.orange : Colors.red
+                    ),
+                    title: Text(data['status'] ?? 'Unknown'),
+                    subtitle: Text("Conf: ${data['confidence']} | Temp: ${data['temperature']}°C"),
+                    trailing: Text(
+                      data['timestamp'] != null 
+                      ? (data['timestamp'] as Timestamp).toDate().toString().substring(11, 16) 
+                      : "--:--"
+                    ),
+                  );
+                },
+              ); 
+            },
+          ),
+        ),
+      ],
     );
   }
 
