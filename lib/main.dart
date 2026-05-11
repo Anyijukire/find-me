@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -123,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Thermal Dashboard'),
@@ -132,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Tab(icon: Icon(Icons.history), text: 'Log'),
               Tab(icon: Icon(Icons.thermostat), text: 'Thermal'),
               Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
+              Tab(icon: Icon(Icons.map_outlined), text: 'Map'),
             ],
           ),
         ),
@@ -140,6 +142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildLogTab(),
             _buildThermalTab(),
             _buildNotificationsTab(),
+            _buildMapTab(), // We will build this next
           ],
         ),
       ),
@@ -306,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         decoration: BoxDecoration(
                           color: _getHeatmapColor(temp),
                           // Slight border creates a "technical" grid look
-                          border: Border.all(color: Colors.black.withOpacity(0.05), width: 0.1),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 0.1),
                         ),
                       );
                     },
@@ -371,4 +374,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+
+  Widget _buildMapTab() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('detections')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text("Waiting for GPS data..."));
+        }
+
+        var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+        // Access the location map we created in Python
+        var loc = data['location'] ?? {};
+        double lat = loc['latitude'] ?? 0.3476;
+        double lng = loc['longitude'] ?? 32.5825;
+
+        return GoogleMap(
+          mapType: MapType.satellite, // <--- This replaces the need for a dark style
+          initialCameraPosition: CameraPosition(
+            target: LatLng(lat, lng),
+            zoom: 15,
+          ),
+          markers: {
+            Marker(
+              markerId: const MarkerId('victim'),
+              position: LatLng(lat, lng),
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+              infoWindow: InfoWindow(
+                title: data['status'],
+                snippet: "Confidence: ${(data['confidence'] * 100).toStringAsFixed(1)}%",
+              ),
+            ),
+          },
+          // Modern UX: Dark mode map if the app is in dark mode
+          //style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
+        );
+      },
+    );
+  }
 }
+
+
+
