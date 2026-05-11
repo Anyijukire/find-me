@@ -1,22 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.9.22' // 1. Added this variable
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // 2. Added this line
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.gms:google-services:4.3.15'
-        // NOTE: Do not place application dependencies here; they belong in the individual module build.gradle files
     }
-}
-
-// ADD THIS NEW BLOCK BELOW THE BUILDSCRIPT
-plugins {
-    id "com.android.application" version "8.1.1" apply false
-    id "com.android.library" version "8.1.1" apply false
-    id "org.jetbrains.kotlin.android" version "1.9.22" apply false
 }
 
 allprojects {
@@ -27,7 +19,6 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
-
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     project.evaluationDependsOn(":app")
