@@ -1,11 +1,13 @@
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
+    id "org.jetbrains.kotlin.android" // Use the full name here
+    id "dev.flutter.flutter-gradle-plugin"
     id 'com.google.gms.google-services'
     // END: FlutterFire Configuration
-    id "kotlin-android"
+    //id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id "dev.flutter.flutter-gradle-plugin"
+    
 }
 apply plugin: 'com.google.gms.google-services'
 
@@ -59,5 +61,5 @@ flutter {
 
 dependencies {
     implementation 'com.google.firebase:firebase-messaging:23.4.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
 }
