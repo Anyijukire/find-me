@@ -1,15 +1,36 @@
-plugins {
-    id "com.android.application"
+//plugins {
+    //id "com.android.application"
     // START: FlutterFire Configuration
-    id "org.jetbrains.kotlin.android" // Use the full name here
-    id "dev.flutter.flutter-gradle-plugin"
-    id 'com.google.gms.google-services'
+    //id "org.jetbrains.kotlin.android" // Use the full name here
+    //id "dev.flutter.flutter-gradle-plugin"
+    //id 'com.google.gms.google-services'
     // END: FlutterFire Configuration
     //id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     
+//}
+//apply plugin: 'com.google.gms.google-services'
+
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
 }
-apply plugin: 'com.google.gms.google-services'
+
+// Add this right below the plugins block to fix the "Unresolved reference: io"
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
 
 
 android {
