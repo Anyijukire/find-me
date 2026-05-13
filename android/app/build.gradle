@@ -82,10 +82,12 @@ flutter {
 
 dependencies {
     // 1. Force the Flutter embedding to be visible to Kotlin
-    def flutterCompileMode = (project.hasProperty('mode') ? project.property('mode') : 'debug')
-    implementation "io.flutter:flutter_embedding_$flutterCompileMode:1.0.0-+"
+    //def flutterCompileMode = (project.hasProperty('mode') ? project.property('mode') : 'debug')
+    //implementation "io.flutter:flutter_embedding_$flutterCompileMode:1.0.0-+"
 
     // 2. Keep your existing ones
     implementation 'com.google.firebase:firebase-messaging:23.4.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
 }
+
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
