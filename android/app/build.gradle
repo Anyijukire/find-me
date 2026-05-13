@@ -30,11 +30,6 @@ android {
     compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
-    // ADD THIS BLOCK
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -42,10 +37,15 @@ android {
         //targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // ADD THIS to be extra safe
-    kotlin {
-        jvmToolchain(17)
+    // ADD THIS BLOCK
+    kotlinOptions {
+        jvmTarget = "17"
     }
+
+    // ADD THIS to be extra safe
+    //kotlin {
+       // jvmToolchain(17)
+    //}
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
