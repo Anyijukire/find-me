@@ -1,15 +1,20 @@
-//plugins {
-    //id "com.android.application"
-    // START: FlutterFire Configuration
-    //id "org.jetbrains.kotlin.android" // Use the full name here
-    //id "dev.flutter.flutter-gradle-plugin"
-    //id 'com.google.gms.google-services'
-    // END: FlutterFire Configuration
-    //id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    
-//}
-//apply plugin: 'com.google.gms.google-services'
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    // This is the fallback for Codemagic
+    flutterRoot = System.getenv('FLUTTER_ROOT')
+}
+
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found.")
+}
 
 plugins {
     id "com.android.application"
@@ -91,4 +96,4 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
 }
 
-//apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
