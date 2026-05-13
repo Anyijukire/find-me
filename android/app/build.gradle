@@ -35,7 +35,8 @@ if (flutterRoot == null) {
 
 android {
     namespace = "com.example.find_me"
-    compileSdk = flutter.compileSdkVersion
+    // CHANGE THIS: Hardcode it to 34 to avoid the "Preview 36" bug
+    compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
     // ADD THIS BLOCK
@@ -62,7 +63,7 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         //minSdk = flutter.minSdkVersion
         minSdk = 21
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34 // Also set this to 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
