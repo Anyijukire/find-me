@@ -160,10 +160,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: isScanning ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+              color: isScanning ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: isScanning ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
+                color: isScanning ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
               ),
             ),
             child: Row(
@@ -309,7 +309,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         decoration: BoxDecoration(
                           color: _getHeatmapColor(temp),
                           // Slight border creates a "technical" grid look
-                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 0.1),
+                          border: Border.all(color: Colors.black.withOpacity(0.05), width: 0.1),
                         ),
                       );
                     },
