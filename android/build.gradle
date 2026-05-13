@@ -18,6 +18,12 @@ allprojects {
         // ADD THIS LINE BELOW
         maven { url 'https://storage.googleapis.com/download.flutter.io' }
     }
+    // This forces every sub-project and plugin to use Java 17
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+    }
 }
 
 rootProject.buildDir = "../build"
