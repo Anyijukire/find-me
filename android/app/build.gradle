@@ -1,6 +1,7 @@
 plugins {
     id "com.android.application"
-    id "org.jetbrains.kotlin.android"
+    //id "org.jetbrains.kotlin.android"
+    id "kotlin-android" // Use this shorthand
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
 }
@@ -82,4 +83,4 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
 }
 
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+//apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
