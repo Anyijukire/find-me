@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
-    //id "org.jetbrains.kotlin.android"
-    id "kotlin-android" // Use this shorthand
+    id "org.jetbrains.kotlin.android"
+    //id "kotlin-android" // Use this shorthand
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
 }
