@@ -111,14 +111,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void togglePi(bool value) async {
+  //void togglePi(bool value) async {
   // We use .set with SetOptions(merge: true) so it doesn't delete other settings
-    await FirebaseFirestore.instance
-        .collection('commands')
-        .doc('pi_control') 
-        .set({'power': value ? 'on' : 'off'}, SetOptions(merge: true));
+    //await FirebaseFirestore.instance
+      //  .collection('commands')
+        //.doc('pi_control') 
+        //.set({'power': value ? 'on' : 'off'}, SetOptions(merge: true));
       
+    //setState(() => isScanning = value);
+  //}
+
+  void togglePi(bool value) async {
+    // Update the UI switch immediately
     setState(() => isScanning = value);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('commands')
+          .doc('pi_control')
+          .set({
+            'is_scanning': value,          // The Boolean (Recommended for Python logic)
+            'power': value ? 'on' : 'off', // The String (What you currently have)
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        
+      print("UAV Command Sent: $value");
+    } catch (e) {
+      print("Error sending command: $e");
+      // Revert switch if the internet failed
+      setState(() => isScanning = !value);
+    }
   }
 
   @override
