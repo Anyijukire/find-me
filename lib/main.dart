@@ -384,39 +384,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
           .limit(1)
           .snapshots(),
       builder: (context, snapshot) {
+        // 1. Check for data
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text("Waiting for GPS data..."));
         }
 
-        var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
-        var loc = data['location'] ?? {};
+        try {
+          // 2. Safely get the document data
+          final doc = snapshot.data!.docs.first;
+          final data = doc.data() as Map<String, dynamic>;
+        
+          // 3. Safely get location map
+          final dynamic locRaw = data['location'];
+          final Map<dynamic, dynamic> loc = (locRaw is Map) ? locRaw : {};
 
-        // DEFENSIVE PARSING: Handle both Strings and Numbers from Python/Firestore
-        double lat = double.tryParse(loc['latitude']?.toString() ?? '') ?? 0.3476;
-        double lng = double.tryParse(loc['longitude']?.toString() ?? '') ?? 32.5825;
-      
-        // Safe parsing for confidence
-        double confidence = double.tryParse(data['confidence']?.toString() ?? '0') ?? 0.0;
-        String status = data['status']?.toString() ?? "Unknown";
+          // 4. Force everything to double using a helper or direct parsing
+          double lat = double.tryParse(loc['latitude']?.toString() ?? '') ?? 0.3476;
+          double lng = double.tryParse(loc['longitude']?.toString() ?? '') ?? 32.5825;
+        
+          // 5. Handle confidence safely
+          double confValue = 0.0;
+          if (data['confidence'] != null) {
+            confValue = double.tryParse(data['confidence'].toString()) ?? 0.0;
+          }
 
-        return GoogleMap(
-          mapType: MapType.satellite,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(lat, lng),
-            zoom: 15,
-          ),
-          markers: {
-            Marker(
-              markerId: const MarkerId('victim'),
-              position: LatLng(lat, lng),
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-              infoWindow: InfoWindow(
-                title: status,
-                snippet: "Confidence: ${(confidence * 100).toStringAsFixed(1)}%",
-              ),
+          return GoogleMap(
+            mapType: MapType.satellite,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(lat, lng),
+              zoom: 15,
             ),
-          },
-        );
+            markers: {
+              Marker(
+                markerId: const MarkerId('victim'),
+                position: LatLng(lat, lng),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+                infoWindow: InfoWindow(
+                  title: data['status']?.toString() ?? "Detection",
+                  snippet: "Confidence: ${(confValue * 100).toStringAsFixed(1)}%",
+                ),
+              ),
+            },
+          );
+        } catch (e) {
+          // This will show you exactly what is failing if it crashes again
+          return Center(child: Text("Data Error: ${e.toString()}"));
+        }
       },
     );
   }
