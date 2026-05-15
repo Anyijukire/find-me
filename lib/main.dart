@@ -389,13 +389,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
-        // Access the location map we created in Python
         var loc = data['location'] ?? {};
-        double lat = loc['latitude'] ?? 0.3476;
-        double lng = loc['longitude'] ?? 32.5825;
+
+        // DEFENSIVE PARSING: Handle both Strings and Numbers from Python/Firestore
+        double lat = double.tryParse(loc['latitude']?.toString() ?? '') ?? 0.3476;
+        double lng = double.tryParse(loc['longitude']?.toString() ?? '') ?? 32.5825;
+      
+        // Safe parsing for confidence
+        double confidence = double.tryParse(data['confidence']?.toString() ?? '0') ?? 0.0;
+        String status = data['status']?.toString() ?? "Unknown";
 
         return GoogleMap(
-          mapType: MapType.satellite, // <--- This replaces the need for a dark style
+          mapType: MapType.satellite,
           initialCameraPosition: CameraPosition(
             target: LatLng(lat, lng),
             zoom: 15,
@@ -406,18 +411,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               position: LatLng(lat, lng),
               icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
               infoWindow: InfoWindow(
-                title: data['status'],
-                snippet: "Confidence: ${(data['confidence'] * 100).toStringAsFixed(1)}%",
+                title: status,
+                snippet: "Confidence: ${(confidence * 100).toStringAsFixed(1)}%",
               ),
             ),
           },
-          // Modern UX: Dark mode map if the app is in dark mode
-          //style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : null,
         );
       },
     );
   }
-}
-
 
 
